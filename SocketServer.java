@@ -28,7 +28,7 @@ public class SocketServer{
                     }
                 }
                 catch(Exception a){
-                    System.out.println("An error ocurred");
+                    System.out.println("An error has ocurred");
                     System.out.println(a.getMessage());
                 } 
             }
