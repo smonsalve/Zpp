@@ -37,7 +37,7 @@ public class Packet{ //still missing the print header method
         this.payloadSize = payloadSize;
         payload = new byte[payloadSize];
 
-        for(int j:data) 
+        for(int j=0;j<data.length;j++) 
             payload[j] = data[j];
     }
 
