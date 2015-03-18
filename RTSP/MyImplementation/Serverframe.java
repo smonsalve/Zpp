@@ -39,13 +39,24 @@ public class Serverframe extends JFrame implements ActionListener{
     public void actionPerformed(ActionEvent e){
         if(imagenb < VIDEO_LENGTH){
             imagenb++;
-
             try{
-                // int image_length = video.getnextframe(buf); 
+                int image_length = video.getnextframe(buf); 
+                Packet packet = new Packet(MJPEG_TYPE, imagenb, imagenb*frame_period,buf, image_length);
+                int packetLength = packet.getLength();
+                byte[] packetBits = new byte[packetLength];
+                packet.getPacket(packetBits);
+                dataPacket = new DatagramPacket(packetBits, packetLength, ClientIp, RTP_dest_port);
+                //RTPsocket.send(packetBits);
+                packet.printHeader();
+                label.setText("Send frame #"+imagenb);
             }
             catch(Exception a){
                 System.out.println(a.getMessage());
+                System.exit(0);
             }
+        }
+        else{
+            timer.stop();
         }
     }
 }

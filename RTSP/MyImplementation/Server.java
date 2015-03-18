@@ -3,12 +3,13 @@ import java.io.*;
 
 public class Server{
    
- //   private Video video;
+    private Video video;
 
     private byte[] buffer;
 
     public Socket Ssocket;
     public DatagramSocket Usocket;
+    public DatagramPacket dataPacket;
     
     public InetAddress ClientIp;
     
@@ -30,6 +31,20 @@ public class Server{
 
     Server(){
         buffer = new byte[15000];
+    }
+
+    public void sendRtspResponse(){
+        try{
+            writer.write("RTSP/1.0 200 OK\n");
+            writer.write("CSeq: "+RTSPSeqNb+"\n");
+            writer.write("Session: "+RTSP_ID+"\n");
+            writer.flush();
+            System.out.println("RTSP Server - Sent response to Client.");
+        }
+        catch(Exception a){
+            System.out.println(a.getMessage());
+            System.exit(0);
+      }
     }
 
     public static void main(String[] argv){
