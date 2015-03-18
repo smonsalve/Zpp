@@ -15,17 +15,23 @@ public class Video{
         }
     }
 
-    public int getNextFrame(byte[] frame) throws Exception{
+    public int getNextFrame(byte[] frame){
         int length;
         String stringLength;
 
         byte[] frameLength = new byte[5];
 
-        file.read(frameLength,0,5);
+        try{
+            file.read(frameLength,0,5);
 
-        stringLength = new String(frameLength);
-        length = Integer.parseInt(stringLength);
+            stringLength = new String(frameLength);
+            length = Integer.parseInt(stringLength);
 
-        return file.read(frame,0,length);
+            return file.read(frame,0,length);
+        }
+        catch(Exception a){
+            System.out.println(a.getMessage());
+            return -1;
+        }
     }
 }
