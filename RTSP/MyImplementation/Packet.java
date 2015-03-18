@@ -1,7 +1,10 @@
-public class Packet{ //still missing the print header method
+public class Packet{ 
 
     private int headerSize = 12;
     private int payloadSize;
+
+    public byte[] header;
+    public byte[] payload;
 
     public int version;
     public int padding;
@@ -13,32 +16,34 @@ public class Packet{ //still missing the print header method
     public int timeStamp;
     public int ssrc;
 
-    public byte[] header;
-    public byte[] payload;
-    
- 
     Packet(int playloadType, int sequenceNumber, int timeStamp, byte[] data, int payloadSize){
     
-        version = (2 << 6);
-        padding = (0 << 5);
-        extension = (0 << 4);
-        cc = (0);
-        marker = (0 << 7);
-        ssrc = 0;
+        int version = 2;
+        int padding = 0;
+        int extension = 0;
+        int cc = 0;
+        int marker = 0;
+        int ssrc = 0;
 
         this.sequenceNumber = sequenceNumber; 
         this.timeStamp = timeStamp;
         this.payloadType = payloadType; 
+        this.payloadSize = payloadSize;
 
         header = new byte[headerSize];
-        header[0] = (byte) (version | padding | extension | cc);     
-        //here will be the remainder of the header
-
-        this.payloadSize = payloadSize;
         payload = new byte[payloadSize];
 
-        for(int j=0;j<data.length;j++) 
-            payload[j] = data[j];
+        header[0] = (byte) (version << 6 | padding << 5 | extension << 4 | cc);     
+        header[1] = (byte) (marker << 7 | payloadType);
+        header[2] = (byte) (sequenceNumber >> 8);
+        header[3] = (byte) (sequenceNumber);
+        header[4] = (byte) (timeStamp >> 24);
+        header[5] = (byte) (timeStamp >> 16);
+        header[6] = (byte) (timeStamp >> 8);
+        header[7] = (byte) (timeStamp);
+        //here will be the remainder of the header but there's not ssrc
+
+        payload = data;
     }
 
     Packet(byte[] packet, int packetSize){
@@ -63,10 +68,10 @@ public class Packet{ //still missing the print header method
 
             int header2 = unsignedInt(header[2]) * 256;
             int header3 = unsignedInt(header[3]);
-            int header2 = unsignedInt(header[4]) * 16777216;
-            int header2 = unsignedInt(header[5]) * 65536;
-            int header2 = unsignedInt(header[6]) * 256;
-            int header2 = unsignedInt(header[7]);
+            int header4 = unsignedInt(header[4]) * 16777216;
+            int header5 = unsignedInt(header[5]) * 65536;
+            int header6 = unsignedInt(header[6]) * 256;
+            int header7 = unsignedInt(header[7]);
 
             sequenceNumber = header3 + header2;
             timeStamp = header7 + header6 + header5 + header6;
@@ -74,17 +79,18 @@ public class Packet{ //still missing the print header method
     }
 
     public int unsignedInt(byte number){
-        return number & 0xFF;
+        if(number >= 0) return number;
+        else return number+256;
+    }
+
+    public int getpayloadType(){
+        return payloadType;
     }
     
     public int getpayloadSize(){
         return payloadSize;
     }
     
-    public int getlength(){
-        return payloadSize + headerSize; 
-    }
-
     public int getTimeStamp(){
         return timeStamp;
     }
@@ -97,20 +103,49 @@ public class Packet{ //still missing the print header method
         return payloadSize;
     }
 
-    public int getpayload(byte[] data) {
-        for (int i=0; i < payloadSize; i++)
-            data[i] = payload[i];
+    public int getlength(){
+        return payloadSize + headerSize; 
+    }
 
-        return(payloadSize);
+    public int getpayload(byte[] data) {
+        for (int j=0;j<payloadSize;j++)
+            data[j] = payload[j];
+
+        return payloadSize;
     } 
 
     public int getpacket(byte[] packet){
-        for (int i=0; i < headerSize; i++)
-            packet[i] = header[i];
+        for(int j=0;j< headerSize;j++)
+            packet[j] = header[j];
         
-        for (int i=0; i < payloadSize; i++)
-            packet[i+headerSize] = payload[i];
+        for(int j=0;j<payloadSize;j++)
+            packet[j+headerSize] = payload[j];
 
-        return payloadSize + headerSize;
+        return payloadSize+headerSize;
     }
+
+    public void printheader(){
+    //is headerSize - 4 because of the ssrc variable
+        for (int i=0; i < (headerSize-4); i++){
+            for (int j = 7; j>=0 ; j--)
+                if ((1<<j & header[i]) != 0)
+                    System.out.print("1");
+                else
+                    System.out.print("0");
+                System.out.print(" ");
+        }
+        System.out.println();
+    } 
+
+/*
+    public void printHeader(){
+        String binary;
+        for(int j=0;j<8;j++){
+            binary = Integer.toBinaryString(header[j] & 0xFF);
+            if(binary.length() == 7) binary = "0" + binary;
+            System.out.print(binary + " ");
+        }
+        System.out.println();
+    }
+*/  
 }
