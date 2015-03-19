@@ -33,6 +33,47 @@ public class Server{
         buffer = new byte[15000];
     }
 
+    public int parseRtspRequest(){
+        int requestType = -1;
+        
+        try{
+
+            String RequestLine = reader.readLine();
+            System.out.println(RequestLine);
+            StringTokenizer tokens = new StringTokenizer(RequestLine);
+            String request_type_string = tokens.nextToken();
+
+            if(request_type_string.equals("SETUP")) request_type = "SETUP";
+            else if(request_type_string.equals("PLAY")) request_type = "PLAY";
+            else if(request_type_string.equals("PAUSE")) request_type = "PAUSE";
+            else if(request_type_string.equals("TEARDOWN")) request_type = "TEARDOWN";
+
+            if (request_type == SETUP)
+                VideoFileName = tokens.nextToken();
+            
+
+            String SeqNumLine = RTSPBufferedReader.readLine();
+            System.out.println(SeqNumLine);
+            tokens = new StringTokenizer(SeqNumLine);
+            tokens.nextToken();
+            RTSPSeqNb = Integer.parseInt(tokens.nextToken());
+            String LastLine = RTSPBufferedReader.readLine();
+            System.out.println(LastLine);
+
+            if(requestType == SETUP){
+                tokens = new StringTokenizer(LastLine);
+                for(int j=0;j<3;j++)
+                    tokens.nextToken();
+                RTP_dest_port = Integer.parseInt(tokens.nextTocken());     
+            } 
+        }
+        catch(Exception a){
+            System.out.println(a.getMessage());
+            System.exit(0);
+        }
+        return requestType;
+    }
+
     public void sendRtspResponse(){
         try{
             writer.write("RTSP/1.0 200 OK\n");
