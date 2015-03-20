@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class Clientframe extends JFrame implements ActionListener{
+public class ClientFrame extends JFrame implements ActionListener{
         
     private Client client;
 
@@ -19,7 +19,7 @@ public class Clientframe extends JFrame implements ActionListener{
 
     private Timer timer;
 
-    Clientframe(Client client){
+    ClientFrame(Client client){
         super("Client");
 
         this.client = client;
