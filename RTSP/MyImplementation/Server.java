@@ -115,7 +115,4 @@ public class Server{
             System.exit(0);
       }
     }
-
-    public static void main(String[] argv){
-            }
 }
