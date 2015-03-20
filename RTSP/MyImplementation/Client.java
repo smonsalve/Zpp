@@ -9,10 +9,10 @@ public class Client{
     private DatagramPacket packet;
 
 
-    private static BufferedReader reader;
-    private static BufferedWriter writer;
+    public static BufferedReader reader;
+    public static BufferedWriter writer;
 
-    private static String videoName;
+    public static String videoName;
 
     private int sequence = 0;
     private int id = 0;
@@ -147,11 +147,5 @@ public class Client{
         catch(Exception a){
             System.out.println(a.getMessage());
         }
-    }
-
-    public static void main(String[] argv){
-        Client client = new Client();
-        Clientframe frame = new Clientframe(client);
-        client.setFrame(frame);
     }
 }
