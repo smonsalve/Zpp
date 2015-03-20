@@ -53,7 +53,7 @@ public class Server{
             dataPacket = new DatagramPacket(packetBits, packetLength, 
                          clientIp, RTPport);
 
-            Usocket.send(packetBits);
+            Usocket.send(dataPacket);
             packet.printHeader();
         }
         catch(Exception a){
