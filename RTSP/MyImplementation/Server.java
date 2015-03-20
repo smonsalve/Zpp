@@ -4,7 +4,7 @@ import java.util.StringTokenizer;
 
 public class Server{
    
-    private Video video;
+    public Video video;
 
     private byte[] buffer;
 
@@ -12,7 +12,7 @@ public class Server{
     public DatagramSocket Usocket;
     public DatagramPacket dataPacket;
     
-    public InetAddress ClientIp;
+    public InetAddress clientIp;
     
     public static BufferedReader reader;
     public static BufferedWriter writer;    
@@ -51,7 +51,7 @@ public class Server{
             packet.getPacket(packetBits);
 
             dataPacket = new DatagramPacket(packetBits, packetLength, 
-                         ClientIp, RTPport);
+                         clientIp, RTPport);
 
             Usocket.send(packetBits);
             packet.printHeader();

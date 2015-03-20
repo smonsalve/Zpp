@@ -9,14 +9,16 @@ public class Serverframe extends JFrame implements ActionListener{
     private Server server;
 
     private int imageNumber;
+    private int videoLength;
 
     Serverframe(Server server){
         super("Frame");
 
         this.server = server;
         imageNumber = 0;
+        videoLength = 500;
 
-        timer = new Timer(Server.framePeriod,this);        
+        timer = new Timer(server.framePeriod,this);        
         timer.setInitialDelay(0);
         timer.setCoalesce(true);
 
@@ -39,7 +41,7 @@ public class Serverframe extends JFrame implements ActionListener{
     }
 
     public void actionPerformed(ActionEvent e){
-        if(imagenb < VIDEO_LENGTH){
+        if(imageNumber < videoLength){
             imageNumber++;
             server.buttonPressed(imageNumber);
             label.setText("Send frame #"+imageNumber);

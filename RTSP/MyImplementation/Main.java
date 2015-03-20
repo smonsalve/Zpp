@@ -1,7 +1,10 @@
+import java.net.*;
+import java.io.*;
+
 public class Main {
-    public static void main(String[] args){
+    public static void main(String[] argv){
         Server server = new Server();
-        Serverframe serverFrame = new Serverframe(Server);
+        Serverframe serverFrame = new Serverframe(server);
         serverFrame.setSize(500,500);
         serverFrame.setVisible(true);
     
@@ -10,11 +13,11 @@ public class Main {
         try{
             ServerSocket Ssocket = new ServerSocket(port);
             server.Ssocket = Ssocket.accept();
-            server.Ssocket.accept();
+            Ssocket.close();
 
             server.clientIp = server.Ssocket.getInetAddress();
 
-            server.state = INIT;
+            server.state = server.INIT;
 
             server.reader = new BufferedReader(
                                 new InputStreamReader(
@@ -30,12 +33,12 @@ public class Main {
         int request; 
         boolean done = false;
         while(!done){
-            request = server.parse_RTSP_request(); 
+            request = server.parseRtspRequest(); 
             if(request == server.SETUP){
                 done = true;
                 
-                server.state = READY;
-                server.send_RTSP_response();
+                server.state = server.READY;
+                server.sendRtspResponse();
     
                 try{
                     server.video = new Video(server.videoName);
@@ -48,23 +51,28 @@ public class Main {
         }
 
         while(true){
-            request = server.parse_RTSP_request(); 
+            request = server.parseRtspRequest(); 
             
-            if(request == server.PLAY && server.state == READY){
-                server.send_RTSP_response();
+            if(request == server.PLAY && server.state == server.READY){
+                server.sendRtspResponse();
                 serverFrame.setTimer(true);
-                server.state = PLAYING; 
+                server.state = server.PLAYING; 
             }
-            else if((server.request == server.PAUSE) && (server.state == server.PLAYING)){
-                server.send_RTSP_response();
+            else if((request == server.PAUSE) && (server.state == server.PLAYING)){
+                server.sendRtspResponse();
                 serverFrame.setTimer(false);
-                server.state = READY;
+                server.state = server.READY;
             }
-            else if(server.request == server.TEARDOWN){
-                server.send_RTSP_response();
-                timer.stop();
-                server.Ssocket.close();
-                server.Usocket.close();
+            else if(request == server.TEARDOWN){
+                server.sendRtspResponse();
+                serverFrame.setTimer(false);
+                try{
+                    server.Ssocket.close();
+                    server.Usocket.close();
+                }
+                catch(Exception a){
+                    System.out.println(a.getMessage());
+                }           
                 System.exit(0);
             }
         }
