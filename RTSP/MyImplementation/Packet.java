@@ -95,7 +95,7 @@ public class Packet{
         return timeStamp;
     }
     
-    public int getSecuenceNumber(){
+    public int getSequenceNumber(){
         return sequenceNumber;
     }
 

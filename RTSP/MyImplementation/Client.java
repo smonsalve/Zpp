@@ -1,19 +1,23 @@
-import java.awt.event.*;
 import java.net.*;
 import java.io.*;
+import java.util.StringTokenizer;
 
-public class Client implements ActionListener{
+public class Client{ 
 
     private Socket Csocket;
+    private DatagramSocket Usocket;
+    private DatagramPacket packet;
+
 
     private static BufferedReader reader;
     private static BufferedWriter writer;
 
     private static String videoName;
 
-    private int secuence = 0;
+    private int sequence = 0;
     private int id = 0;
     private int MJPEG = 26;
+    private int port;
     
     private static int INIT = 0;
     private static int READY = 1;
@@ -22,31 +26,132 @@ public class Client implements ActionListener{
 
     private byte[] buffer;
 
+    private Clientframe frame;
+
     Client(){
         buffer = new byte[15000];
     }
+    
+    public void setFrame(Clientframe frame){
+        this.frame = frame;
+    }
 
-    public void actionPerformed(ActionEvent e){
-        String val = e.getActionCommand();
-        if(val.equals("SETUP")){
-            System.out.println("SETUP");                    
-        } 
-        else if(val.equals("PLAY")){
-            System.out.println("PLAY");                    
+    public void setUp(){
+        if(state == INIT){
+            try{
+                Usocket = new DatagramSocket(port);  
+                Usocket.setSoTimeout(5);
+            }
+            catch(Exception a){
+                System.out.println(a.getMessage());
+                System.exit(0);
+            }
+            sequence = 1;
 
+            sendRtspRequest("SETUP");
+
+            if(parseServerResponse() == 200)
+                state = READY;
         }
-        else if(val.equals("PAUSE")){
-            System.out.println("PAUSE");                    
+    }
+
+    public void play(){
+        if(state == READY){
+            sequence++;
+            sendRtspRequest("PLAY"); 
+            if(parseServerResponse() == 200){
+                state = PLAYING;
+                frame.setTimer(true);
+            }
+        }
+    }
+
+    public void pause(){
+        if(state == PLAYING){
+            sequence++;
+            sendRtspRequest("PAUSE");
+            if(parseServerResponse() == 200){
+                state = READY;
+                frame.setTimer(false);
+            }
+        }      
+    }
+
+    public void tear(){
+        sequence++;
+        sendRtspRequest("TEARDOWN");
+        if(parseServerResponse() == 200){
+            state = INIT;
+            frame.setTimer(false);
+            System.exit(0);
+        }
+    }
+
+    public void timer(){
+        packet = new DatagramPacket(buffer, buffer.length); 
+        try{
+            Usocket.receive(packet);
+            Packet packetRtsp = new Packet(packet.getData(), packet.getLength());
+            
+            System.out.println("Got RTP packet with SeqNum # "+packetRtsp.getSequenceNumber()+" TimeStamp "+packetRtsp.getTimeStamp()+" ms, of type "+packetRtsp.getPayloadType());
+
+            packetRtsp.printHeader();
+
+            int payloadLength = packetRtsp.getPayloadSize();
+            byte[] payload = new byte[payloadLength];
+            
+            packetRtsp.getPayload(payload);
         
+            frame.setImage(payload);
         }
-        else if(val.equals("TEAR")){
-            System.out.println("TEAR");                    
+        catch(Exception a){
+            System.out.println(a.getMessage());
+        }
+    }
 
+    private int parseServerResponse(){
+        int replyCode = 0;
+        
+        try{
+            String line = reader.readLine();
+            
+            StringTokenizer token = new StringTokenizer(line);
+            token.nextToken();
+            replyCode = Integer.parseInt(token.nextToken());
+
+            if(replyCode == 200){
+                //String number = reader.readLine();
+                String session = reader.readLine();
+                token = new StringTokenizer(session); 
+                token.nextToken();
+                id = Integer.parseInt(token.nextToken());
+            }
+        }
+        catch(Exception a){
+            System.out.println(a.getMessage());
+            System.exit(0);
+        }
+        return replyCode;
+    }
+    
+    private void sendRtspRequest(String request){
+        try{
+            writer.write(request+" "+videoName+" "+"RTSP/1.0\n");
+            writer.write("CSeq: "+sequence+"\n");
+            if(request.equals("SETUP"))
+                writer.write("Transport: RTP/UDP; client_port= "+port+"\n");
+            else
+                writer.write("Session: "+id+"\n");
+            writer.flush();
+        }
+        catch(Exception a){
+            System.out.println(a.getMessage());
         }
     }
 
     public static void main(String[] argv){
         Client client = new Client();
         Clientframe frame = new Clientframe(client);
+        client.setFrame(frame);
     }
 }
