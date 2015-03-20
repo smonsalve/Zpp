@@ -83,11 +83,11 @@ public class Packet{
         else return number+256;
     }
 
-    public int getpayloadType(){
+    public int getPayloadType(){
         return payloadType;
     }
     
-    public int getpayloadSize(){
+    public int getPayloadSize(){
         return payloadSize;
     }
     
@@ -99,22 +99,18 @@ public class Packet{
         return sequenceNumber;
     }
 
-    public int getPayloadSize(){
-        return payloadSize;
-    }
-
-    public int getlength(){
+    public int getLength(){
         return payloadSize + headerSize; 
     }
 
-    public int getpayload(byte[] data) {
+    public int getPayload(byte[] data) {
         for (int j=0;j<payloadSize;j++)
             data[j] = payload[j];
 
         return payloadSize;
     } 
 
-    public int getpacket(byte[] packet){
+    public int getPacket(byte[] packet){
         for(int j=0;j< headerSize;j++)
             packet[j] = header[j];
         
@@ -124,7 +120,7 @@ public class Packet{
         return payloadSize+headerSize;
     }
 
-    public void printheader(){
+    public void printHeader(){
     //is headerSize - 4 because of the ssrc variable
         for (int i=0; i < (headerSize-4); i++){
             for (int j = 7; j>=0 ; j--)

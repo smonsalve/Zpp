@@ -4,22 +4,19 @@ import java.awt.event.*;
 
 public class Serverframe extends JFrame implements ActionListener{
 
-    private int frame_period = 100;  
     private Timer timer;
     private JLabel label;
+    private Server server;
 
-    private int imagenb = 0;
-    private int RTSPSeqNb = 0;
-    private int RTP_dest_port = 0;    
+    private int imageNumber;
 
-    public static int RTSP_ID = 123456;
-    public static int VIDEO_LENGTH = 500;
-    public static int MJPEG_TYPE = 26;
-
-    Serverframe(){
+    Serverframe(Server server){
         super("Frame");
 
-        timer = new Timer(frame_period,this);        
+        this.server = server;
+        imageNumber = 0;
+
+        timer = new Timer(Server.framePeriod,this);        
         timer.setInitialDelay(0);
         timer.setCoalesce(true);
 
@@ -36,24 +33,16 @@ public class Serverframe extends JFrame implements ActionListener{
         getContentPane().add(label, BorderLayout.CENTER);
     }
 
+    public void setTimer(boolean state){
+        if(state) timer.start();
+        else timer.stop();
+    }
+
     public void actionPerformed(ActionEvent e){
         if(imagenb < VIDEO_LENGTH){
-            imagenb++;
-            try{
-                int image_length = video.getnextframe(buf); 
-                Packet packet = new Packet(MJPEG_TYPE, imagenb, imagenb*frame_period,buf, image_length);
-                int packetLength = packet.getLength();
-                byte[] packetBits = new byte[packetLength];
-                packet.getPacket(packetBits);
-                dataPacket = new DatagramPacket(packetBits, packetLength, ClientIp, RTP_dest_port);
-                //RTPsocket.send(packetBits);
-                packet.printHeader();
-                label.setText("Send frame #"+imagenb);
-            }
-            catch(Exception a){
-                System.out.println(a.getMessage());
-                System.exit(0);
-            }
+            imageNumber++;
+            server.buttonPressed(imageNumber);
+            label.setText("Send frame #"+imageNumber);
         }
         else{
             timer.stop();
